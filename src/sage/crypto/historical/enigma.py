@@ -6,6 +6,7 @@ reflectors for the Enigma I. It also provides the ability to create custom
 rotors and reflectors and does not limit the amount of rotors to use in the
 enigma.
 
+
 EXAMPLES:
 
 The easiest way to create an Enigma is by using the predefined Enigma settings::
@@ -13,7 +14,7 @@ The easiest way to create an Enigma is by using the predefined Enigma settings::
     sage: enigma = Enigma.create([5, 3, 2], [5, 24, 11], [2, 4, 24], 2)
     sage: one = enigma.en_de_crypt("GOODMORNING")
     sage: one
-    HKVOWVPLLBC
+    'HKVOWVPLLBC'
 
 You can also build a custom enigma. Here we build the enigma we just created by
 hand::
@@ -29,9 +30,9 @@ hand::
     sage: enigma_custom = Enigma([a, b, c], r)
     sage: two = enigma_custom.en_de_crypt("GOODMORNING")
     sage: two
-    HKVOWVPLLBC
+    'HKVOWVPLLBC'
     sage: one == two
-    sage: True
+    True
 
 To decrypt an encrypted message we need to know the initial settings of the
 enigma used to encrypt the message. This can be done by just recreating that
@@ -40,21 +41,23 @@ enigma::
     sage: decrypt_enigma = Enigma.create([5, 3, 2], [5, 24, 11], [2, 4, 24], 2)
     sage: decrypted = decrypt_enigma.en_de_crypt("HKVOWVPLLBC")
     sage: decrypted
-    GOODMORNING
+    'GOODMORNING'
 
 If we encrypt multiple messages it may be stressful to recreate the exact state
 of the enigma to decrypt a specific message. In that case we can duplicate the
 enigma before we encrypt a message that we want to decrypt::
 
     sage: enigma.en_de_crypt("MORE")
+    'QKYK'
     sage: enigma.en_de_crypt("WORDS")
+    'VZGEV'
     sage: decrypt_enigma = enigma.duplicate()
     sage: encrypted = enigma.en_de_crypt("SECRET")
     sage: encrypted
-    NGZIFC
+    'NGZIFC'
     sage: decrypted = decrypt_enigma.en_de_crypt(encrypted)
     sage: decrypted
-    SECRET
+    'SECRET'
 
 The enigma also supports a plugboard::
 
@@ -64,10 +67,10 @@ The enigma also supports a plugboard::
     sage: decrypt_enigma = enigma.duplicate()
     sage: encrypted = enigma.en_de_crypt("PLUGBOARD")
     sage: encrypted
-    YHKVADMPH
+    'YHKVADMPH'
     sage: decrypted = decrypt_enigma.en_de_crypt("YHKVADMPH")
     sage: decrypted
-    PLUGBOARD
+    'PLUGBOARD'
 
 It may also be helpful to take a closer look at the representation of the used
 permutations. Each letter has a index beginning with 0 representing the letter
@@ -80,10 +83,10 @@ B -> B, and so on)::
     sage: e_w_p = Enigma.create([3, 4, 1], [12, 23, 1], [1, 8, 7], 1, p)
     sage: one = e_wo_p.en_de_crypt("PERMUTATION")
     sage: one
-    KQFCZJUITNF
+    'KQFCZJUITNF'
     sage: two = e_w_p.en_de_crypt("PERMUTATION")
     sage: two
-    KQFCZJUITNF
+    'KQFCZJUITNF'
     sage: one == two
     True
 
@@ -93,7 +96,6 @@ AUTHORS:
 - Tobias Schneider (2024-06): proofreading and testing it via implementation of Turing-Bombe
 
 """
-
 
 # ****************************************************************************
 #       Copyright (C) 2024 Nico Koeckerbauer <kolando@gmx.de>,
@@ -105,6 +107,7 @@ AUTHORS:
 # (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
+
 
 class Rotor:
     r"""
@@ -148,7 +151,7 @@ class Rotor:
     The notch must be a integer between 1 and 26::
 
         sage: r = Rotor([21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13, 7, 11,
-        sage: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 50, 5, 2)
+        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 50, 5, 2)
         Traceback (most recent call last):
         ...
         ValueError: Notch must be a integer between 1 and 26
@@ -174,12 +177,12 @@ class Rotor:
     The values in the permutation must be a integer between 0 and 25::
 
         sage: r = Rotor([26, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13, 7, 11,
-        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 0, 2)
+        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 1, 2)
         Traceback (most recent call last):
         ...
         ValueError: Values of the permutation must be a integer between 0 and 25
         sage: r = Rotor([-1, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13, 7, 11,
-        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 0, 2)
+        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 1, 2)
         Traceback (most recent call last):
         ...
         ValueError: Values of the permutation must be a integer between 0 and 25
@@ -188,31 +191,42 @@ class Rotor:
     permutation can occur more than one time::
 
         sage: r = Rotor([21, 25, 1, 17, 6, 8, 19, 24, 21, 15, 18, 3, 13, 7, 11,
-        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 0, 2)
+        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 1, 2)
         Traceback (most recent call last):
         ...
         ValueError: Permutation must be a bijection
     """
 
-    def __init__(self, permutation: list[int], notch: int, initial_position: int, offset: int):
+    def __init__(
+        self, permutation: list[int], notch: int, initial_position: int, offset: int
+    ):
         r"""
         Initializes the ``Rotor`` class. See the class :class:`Rotor` for full
         documentation on the input of this initialization method.
+
+        EXAMPLES::
+
+        sage: r = Rotor([21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13, 7, 11,
+        ....: 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 5, 2)
+        sage: r
+        Rotor with current position 5 (Initially 5), offset of 2, notch at
+            26 and using permutation [21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18,
+            3, 13, 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10]
         """
 
         # list used to check if permutation is a bijection
-        check_list: list[int] = [None] * 26
+        check_list: list[int] = [int] * 26
         if len(permutation) != 26:
             raise ValueError("Permutation must have a length of 26")
         if notch > 26 or notch < 1:
             raise ValueError("Notch must be a integer between 1 and 26")
         if initial_position > 26 or initial_position < 1:
-            raise ValueError("Initial position must be a integer between 1 and "
-                             "26")
+            raise ValueError("Initial position must be a integer between 1 and " "26")
         for v in permutation:
             if v < 0 or v > 25:
-                raise ValueError("Values of the permutation must be a integer "
-                                 "between 0 and 25")
+                raise ValueError(
+                    "Values of the permutation must be a integer " "between 0 and 25"
+                )
             if check_list[v] == 1:
                 raise ValueError("Permutation must be a bijection")
             else:
@@ -266,8 +280,7 @@ class Rotor:
         next_rotate: bool = False
 
         if letter_value < 0 or letter_value > 25:
-            raise ValueError(
-                "Invalid letter: Input can only contain letters A - Z")
+            raise ValueError("Invalid letter: Input can only contain letters A - Z")
 
         if rotate:
             self._position = (self._position + 1) % 26
@@ -298,7 +311,7 @@ class Rotor:
             sage: r = Rotor([21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13, 7,
             ....: 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 5, 2)
             sage: r._process_letter_backward("B")
-            U
+            'U'
 
         Can only process letters A - Z::
 
@@ -318,13 +331,11 @@ class Rotor:
         letter_value = ord(letter) - 65
 
         if letter_value < 0 or letter_value > 25:
-            raise ValueError(
-                "Invalid letter: Input can only contain letters A - Z")
+            raise ValueError("Invalid letter: Input can only contain letters A - Z")
 
         current_offset = (self._position - self._offset) % 26
         letter_value = (letter_value + current_offset) % 26
-        letter_value = (self._permutation.index(
-            letter_value) - current_offset) % 26
+        letter_value = (self._permutation.index(letter_value) - current_offset) % 26
 
         return chr(letter_value + 65)
 
@@ -340,16 +351,18 @@ class Rotor:
 
             sage: r = Rotor([21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13, 7,
             ....: 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 5, 2)
-            sage: r._process_letter_forward("A", True)
+            sage: r._process_letter_forward('A', True)
+            ('C', False)
             sage: c = r.duplicate()
             sage: r
-            Rotor with current position 6 (Initially 6), offset of 2, notch at
+            Rotor with current position 6 (Initially 5), offset of 2, notch at
             26 and using permutation [21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18,
             3, 13, 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10]
         """
 
-        return Rotor(self._permutation, self._notch + 1, self._position + 1,
-                     self._offset + 1)
+        return Rotor(
+            self._permutation, self._notch + 1, self._position + 1, self._offset + 1
+        )
 
     def __repr__(self) -> str:
         r"""
@@ -365,10 +378,17 @@ class Rotor:
             3, 13, 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10]
         """
 
-        msg = ("Rotor with current position {0} (Initially {1}), "
-               "offset of {2}, notch at {3} and using permutation {4}")
-        return msg.format(self._position + 1, self._initial_position + 1,
-                          self._offset + 1, self._notch + 1, self._permutation)
+        msg = (
+            "Rotor with current position {0} (Initially {1}), "
+            "offset of {2}, notch at {3} and using permutation {4}"
+        )
+        return msg.format(
+            self._position + 1,
+            self._initial_position + 1,
+            self._offset + 1,
+            self._notch + 1,
+            self._permutation,
+        )
 
 
 class Reflector:
@@ -419,17 +439,15 @@ class Reflector:
     between 0 and 25::
 
         sage: r = Reflector([50, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6, 14,
-        ....: 10, 12, 8, 4, 1, 5, 25, 2, 22, 21])
+        ....: 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 12, 2, 19])
         Traceback (most recent call last):
         ...
-        ValueError: Values of the permutation must be a integer between 0 and
-        25
+        ValueError: Values of the permutation must be a integer between 0 and 25
         sage: r = Reflector([-12, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6, 14,
-        ....: 10, 12, 8, 4, 1, 5, 25, 2, 22, 21])
+        ....: 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 12, 2, 19])
         Traceback (most recent call last):
         ...
-        ValueError: Values of the permutation must be a integer between 0 and
-        25
+        ValueError: Values of the permutation must be a integer between 0 and 25
 
     The permutation for a reflector/plugboard must be a bijection, meaning that
     no value in the permutation can occur more than one time::
@@ -445,16 +463,22 @@ class Reflector:
         r"""
         Initializes the ``Reflector`` class. See the class :class:`Reflector`
         for full documentation on the input of this initialization method.
+
+        EXAMPLES::
+
+        sage: r = Reflector([24, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6, 14,
+        ....: 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19])
         """
 
         # list used to check if permutation is a bijection
-        check_list: list[int] = [None] * 26
+        check_list: list[int] = [int] * 26
         if len(permutation) != 26:
             raise ValueError("Permutation must have a length of 26")
         for v in permutation:
             if v < 0 or v > 25:
-                raise ValueError("Values of the permutation must be a integer "
-                                 "between 0 and 25")
+                raise ValueError(
+                    "Values of the permutation must be a integer between 0 and 25"
+                )
             if check_list[v] == 1:
                 raise ValueError("Permutation must be a bijection")
             else:
@@ -479,7 +503,7 @@ class Reflector:
             sage: r = Reflector([24, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6,
             ....: 14, 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19])
             sage: r._process_letter("A")
-            Y
+            'Y'
 
         When being used as a plugboard we need to change the direction of
         travel when the letter passes the second time::
@@ -487,7 +511,7 @@ class Reflector:
             sage: r = Reflector([24, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6,
             ....: 14, 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19])
             sage: r._process_letter("Y", False)
-            A
+            'A'
 
         Can only process letters A - Z::
 
@@ -507,8 +531,7 @@ class Reflector:
         letter_value = ord(letter) - 65
 
         if letter_value < 0 or letter_value > 25:
-            raise ValueError(
-                "Invalid letter: Input can only contain letters A - Z")
+            raise ValueError("Invalid letter: Input can only contain letters A - Z")
 
         if forward:
             letter_value = self._permutation[letter_value]
@@ -561,7 +584,7 @@ class Enigma:
         ....: 14, 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19])
         sage: e = Enigma([a, b, c], d, None)
         sage: e
-        Enigma using [Rotor with current position 24 (Initially 5), offset of
+        Enigma using [Rotor with current position 5 (Initially 5), offset of
         2, notch at 26 and using permutation [21, 25, 1, 17, 6, 8, 19, 24, 20,
         15, 18, 3, 13, 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], Rotor
         with current position 24 (Initially 24), offset of 4, notch at 22 and
@@ -579,11 +602,38 @@ class Enigma:
         To use predefined rotors and reflectors see :meth:`create`
     """
 
-    def __init__(self, rotors: list[Rotor], reflector: Reflector,
-                 plugboard: Reflector = None):
+    def __init__(
+        self,
+        rotors: list[Rotor],
+        reflector: Reflector,
+        plugboard: Reflector = None,
+    ):
         r"""
         Initializes the ``Enigma`` class. See the class :class:`Enigma` for
         full documentation on the input of this initialization method.
+
+        EXAMPLES::
+
+        sage: a = Rotor([21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13,
+        ....: 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], 26, 5, 2)
+        sage: b = Rotor([1, 3, 5, 7, 9, 11, 2, 15, 17, 19, 23, 21, 25, 13,
+        ....: 24, 4, 8, 22, 6, 0, 10, 12, 20, 18, 16, 14], 22, 24, 4)
+        sage: c = Rotor([0, 9, 3, 10, 18, 8, 17, 20, 23, 1, 11, 7, 22, 19,
+        ....: 12, 2, 16, 6, 25, 13, 15, 24, 5, 21, 14, 4], 5, 11, 24)
+        sage: d = Reflector([24, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6,
+        ....: 14, 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19])
+        sage: e = Enigma([a, b, c], d, None)
+        sage: e
+        Enigma using [Rotor with current position 5 (Initially 5), offset of 2,
+        notch at 26 and using permutation [21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18,
+        3, 13, 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2, 10], Rotor with current
+        position 24 (Initially 24), offset of 4, notch at 22 and using permutation
+        [1, 3, 5, 7, 9, 11, 2, 15, 17, 19, 23, 21, 25, 13, 24, 4, 8, 22, 6, 0, 10, 12,
+        20, 18, 16, 14], Rotor with current position 11 (Initially 11), offset of 24,
+        notch at 5 and using permutation [0, 9, 3, 10, 18, 8, 17, 20, 23, 1, 11, 7, 22,
+        19, 12, 2, 16, 6, 25, 13, 15, 24, 5, 21, 14, 4]], Reflector or Plugboard using
+        permutation [24, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6, 14, 10, 12, 8, 4,
+        1, 5, 25, 2, 22, 21, 9, 0, 19] as a reflector and None as a plugboard
         """
 
         self._rotors = rotors
@@ -591,8 +641,13 @@ class Enigma:
         self._plugboard = plugboard
 
     @staticmethod
-    def create(rotors: list[int], initial_positions: list[int],
-               offsets: list[int], reflector: int, plugboard: Reflector = None):
+    def create(
+        rotors: list[int],
+        initial_positions: list[int],
+        offsets: list[int],
+        reflector: int,
+        plugboard: Reflector = None,
+    ):
         r"""
         Function to create an Enigma with predefined rotors and reflectors.
         All the predefined rotors and reflectors are replicated from the
@@ -606,7 +661,7 @@ class Enigma:
         - ``initial_positions`` -- list[integer]; List of integers setting the
           initial position of the ``rotors``. This list must be the same length
           as ``rotors`` since the initial position at index ``i`` relates to
-          the rotor at index ``i``. Note that evey value in this list has to
+          the rotor at index ``i``. Note that every value in this list has to
           be a integer between 1 and 26
 
         - ``offsets`` -- list[integer]; List of integers setting the offset of
@@ -625,7 +680,7 @@ class Enigma:
 
             sage: e = Enigma.create([5, 3, 2], [5, 24, 11], [2, 4, 24], 2, None)
             sage: e
-            Enigma using [Rotor with current position 17 (Initially 5), offset
+            Enigma using [Rotor with current position 5 (Initially 5), offset
             of 2, notch at 26 and using permutation [21, 25, 1, 17, 6, 8, 19,
             24, 20, 15, 18, 3, 13, 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2,
             10], Rotor with current position 24 (Initially 24), offset of 4,
@@ -678,13 +733,13 @@ class Enigma:
 
         The length of the list for the initials position and the list for the
         offsets must be the same length as the list for the rotors to be used
-        since every rotor need a initial postion and offset::
+        since every rotor need a initial position and offset::
 
             sage: e = Enigma.create([5, 3, 2, 4], [5, 24], [2, 4, 24], 2, None)
             Traceback (most recent call last):
             ...
             ValueError: initial_positions and rotors must be the same length
-            sage: e = Enigma.create([5, 3, 2, 4], [5, 24, 1], [2, 4], 2, None)
+            sage: e = Enigma.create([5, 3, 2], [5, 24, 1], [2, 4], 2, None)
             Traceback (most recent call last):
             ...
             ValueError: offsets and rotors must be the same length
@@ -692,43 +747,250 @@ class Enigma:
         There are not unlimited predefined rotors and reflectors::
 
             sage: e = Enigma.create([2, 6], [2, 5], [12, 13], 2, None)
-            Traceback (most recent call last);
+            Traceback (most recent call last):
             ...
             ValueError: Values in rotors must be a integer between 1 and 5
             sage: e = Enigma.create([2, 5], [2, 5], [12, 13], 4, None)
-            Traceback (most recent call last);
+            Traceback (most recent call last):
             ...
             ValueError: Reflector must be a value between 1 and 3
         """
 
         wheels = [
-            [4, 10, 12, 5, 11, 6, 3, 16, 21, 25, 13, 19, 14, 22, 24, 7,
-             23, 20, 18, 15, 0, 8, 1, 17, 2, 9],
-            [0, 9, 3, 10, 18, 8, 17, 20, 23, 1, 11, 7, 22, 19, 12, 2, 16,
-             6, 25, 13, 15, 24, 5, 21, 14, 4],
-            [1, 3, 5, 7, 9, 11, 2, 15, 17, 19, 23, 21, 25, 13, 24, 4, 8,
-             22, 6, 0, 10, 12, 20, 18, 16, 14],
-            [4, 18, 14, 21, 15, 25, 9, 0, 24, 16, 20, 8, 17, 7, 23, 11,
-             13, 5, 19, 6, 10, 3, 2, 12, 22, 1],
-            [21, 25, 1, 17, 6, 8, 19, 24, 20, 15, 18, 3, 13, 7, 11, 23,
-             0, 22, 12, 9, 16, 14, 5, 4, 2, 10]
+            [
+                4,
+                10,
+                12,
+                5,
+                11,
+                6,
+                3,
+                16,
+                21,
+                25,
+                13,
+                19,
+                14,
+                22,
+                24,
+                7,
+                23,
+                20,
+                18,
+                15,
+                0,
+                8,
+                1,
+                17,
+                2,
+                9,
+            ],
+            [
+                0,
+                9,
+                3,
+                10,
+                18,
+                8,
+                17,
+                20,
+                23,
+                1,
+                11,
+                7,
+                22,
+                19,
+                12,
+                2,
+                16,
+                6,
+                25,
+                13,
+                15,
+                24,
+                5,
+                21,
+                14,
+                4,
+            ],
+            [
+                1,
+                3,
+                5,
+                7,
+                9,
+                11,
+                2,
+                15,
+                17,
+                19,
+                23,
+                21,
+                25,
+                13,
+                24,
+                4,
+                8,
+                22,
+                6,
+                0,
+                10,
+                12,
+                20,
+                18,
+                16,
+                14,
+            ],
+            [
+                4,
+                18,
+                14,
+                21,
+                15,
+                25,
+                9,
+                0,
+                24,
+                16,
+                20,
+                8,
+                17,
+                7,
+                23,
+                11,
+                13,
+                5,
+                19,
+                6,
+                10,
+                3,
+                2,
+                12,
+                22,
+                1,
+            ],
+            [
+                21,
+                25,
+                1,
+                17,
+                6,
+                8,
+                19,
+                24,
+                20,
+                15,
+                18,
+                3,
+                13,
+                7,
+                11,
+                23,
+                0,
+                22,
+                12,
+                9,
+                16,
+                14,
+                5,
+                4,
+                2,
+                10,
+            ],
         ]
         notches = [17, 5, 22, 10, 26]
         reflectors = [
-            [4, 9, 12, 25, 0, 11, 24, 23, 21, 1, 22, 5, 2, 17, 16,
-             20, 14, 13, 19, 18, 15, 8, 10, 7, 6, 3],
-            [24, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6, 14, 10, 12,
-             8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19],
-            [5, 21, 15, 9, 8, 0, 14, 24, 4, 3, 17, 25, 23, 22, 6, 2,
-             19, 10, 20, 16, 18, 1, 13, 12, 7, 11]
+            [
+                4,
+                9,
+                12,
+                25,
+                0,
+                11,
+                24,
+                23,
+                21,
+                1,
+                22,
+                5,
+                2,
+                17,
+                16,
+                20,
+                14,
+                13,
+                19,
+                18,
+                15,
+                8,
+                10,
+                7,
+                6,
+                3,
+            ],
+            [
+                24,
+                17,
+                20,
+                7,
+                16,
+                18,
+                11,
+                3,
+                15,
+                23,
+                13,
+                6,
+                14,
+                10,
+                12,
+                8,
+                4,
+                1,
+                5,
+                25,
+                2,
+                22,
+                21,
+                9,
+                0,
+                19,
+            ],
+            [
+                5,
+                21,
+                15,
+                9,
+                8,
+                0,
+                14,
+                24,
+                4,
+                3,
+                17,
+                25,
+                23,
+                22,
+                6,
+                2,
+                19,
+                10,
+                20,
+                16,
+                18,
+                1,
+                13,
+                12,
+                7,
+                11,
+            ],
         ]
         rotor_list: list[Rotor] = []
 
         if len(rotors) < 0:
             raise ValueError("Enigma must have a rotor")
         if len(initial_positions) != len(rotors):
-            raise ValueError("initial_positions and rotors must be the same "
-                             "length")
+            raise ValueError("initial_positions and rotors must be the same length")
         if len(offsets) != len(rotors):
             raise ValueError("offsets and rotors must be the same length")
         if reflector < 1 or reflector > 3:
@@ -736,10 +998,12 @@ class Enigma:
 
         for idx, r in enumerate(rotors):
             if r < 0 or r > 5:
-                raise ValueError("Values in rotors must be a integer between "
-                                 "1 and 5")
-            rotor_list.append(Rotor(wheels[r - 1], notches[r - 1],
-                                    initial_positions[idx], offsets[idx]))
+                raise ValueError("Values in rotors must be a integer between 1 and 5")
+            rotor_list.append(
+                Rotor(
+                    wheels[r - 1], notches[r - 1], initial_positions[idx], offsets[idx]
+                )
+            )
 
         return Enigma(rotor_list, Reflector(reflectors[reflector - 1]), plugboard)
 
@@ -769,7 +1033,7 @@ class Enigma:
             ....: 14, 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19])
             sage: e = Enigma([a, b, c], d, None)
             sage: e.en_de_crypt("HELLO")
-            GCIID
+            'GCIID'
 
         The text can not contain any other character than the letters A - Z::
 
@@ -782,7 +1046,7 @@ class Enigma:
         letters::
 
             sage: e.en_de_crypt("hellohowareyou")
-            CUNIWXNYWUXNXZ
+            'XPVIDDZIXUIDVA'
         """
 
         result = ""
@@ -792,23 +1056,32 @@ class Enigma:
             predecessor_tuple: tuple[str, bool] = letter, True
 
             if self._plugboard is not None:
-                predecessor_tuple = self._plugboard._process_letter(
-                    predecessor_tuple[0]), True
+                predecessor_tuple = (
+                    self._plugboard._process_letter(predecessor_tuple[0]),
+                    True,
+                )
 
             for rotor in self._rotors:
                 predecessor_tuple = rotor._process_letter_forward(
-                    predecessor_tuple[0], predecessor_tuple[1])
+                    predecessor_tuple[0], predecessor_tuple[1]
+                )
 
-            predecessor_tuple = self._reflector._process_letter(
-                predecessor_tuple[0]), False
+            predecessor_tuple = (
+                self._reflector._process_letter(predecessor_tuple[0]),
+                False,
+            )
 
             for rotor in reversed(self._rotors):
-                predecessor_tuple = rotor._process_letter_backward(
-                    predecessor_tuple[0]), False
+                predecessor_tuple = (
+                    rotor._process_letter_backward(predecessor_tuple[0]),
+                    False,
+                )
 
             if self._plugboard is not None:
-                predecessor_tuple = self._plugboard._process_letter(
-                    predecessor_tuple[0], False), False
+                predecessor_tuple = (
+                    self._plugboard._process_letter(predecessor_tuple[0], False),
+                    False,
+                )
 
             result += predecessor_tuple[0]
 
@@ -826,7 +1099,7 @@ class Enigma:
 
             sage: e = Enigma.create([5, 3, 2], [5, 24, 11], [2, 4, 24], 2)
             sage: c = e.duplicate()
-            sage: text = "Hello"
+            sage: text = "Hello".upper()
             sage: encrypted_text = e.en_de_crypt(text)
             sage: decrypted_text = c.en_de_crypt(encrypted_text)
             sage: decrypted_text == text
@@ -857,7 +1130,7 @@ class Enigma:
             ....: 14, 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19])
             sage: e = Enigma([a, b, c], d, None)
             sage: e
-            Enigma using [Rotor with current position 24 (Initially 5), offset
+            Enigma using [Rotor with current position 5 (Initially 5), offset
             of 2, notch at 26 and using permutation [21, 25, 1, 17, 6, 8, 19,
             24, 20, 15, 18, 3, 13, 7, 11, 23, 0, 22, 12, 9, 16, 14, 5, 4, 2,
             10], Rotor with current position 24 (Initially 24), offset of 4,
